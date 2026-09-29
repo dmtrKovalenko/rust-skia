@@ -1,6 +1,6 @@
 [package]
 
-name = "skia-bindings"
+name = "fframes-skia-bindings"
 description = "Skia Bindings for Rust"
 homepage = "https://github.com/rust-skia/rust-skia/tree/master/skia-bindings"
 repository = "https://github.com/rust-skia/rust-skia"
@@ -9,7 +9,7 @@ keywords = ["skia", "rust-bindings", "vulkan", "opengl", "pdf"]
 categories = ["external-ffi-bindings", "graphics", "multimedia::images", "rendering::graphics-api", "visualization"]
 license = "MIT"
 
-version = "0.91.0"
+version = "0.91.1"
 authors = ["LongYinan <lynweklm@gmail.com>", "Armin Sander <armin@replicator.org>"]
 edition = "2021"
 rust-version.workspace = true

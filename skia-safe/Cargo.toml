@@ -1,5 +1,5 @@
 [package]
-name = "skia-safe"
+name = "fframes-skia-safe"
 
 description = "Safe Skia Bindings for Rust"
 homepage = "https://github.com/rust-skia/rust-skia"
@@ -28,7 +28,16 @@ doctest = false
 
 [features]
 default = ["binary-cache", "embed-icudtl", "pdf"]
-all-linux = ["gl", "egl", "vulkan", "x11", "wayland", "textlayout", "svg", "webp"]
+all-linux = [
+    "gl",
+    "egl",
+    "vulkan",
+    "x11",
+    "wayland",
+    "textlayout",
+    "svg",
+    "webp",
+]
 all-windows = ["gl", "vulkan", "d3d", "textlayout", "svg", "webp"]
 all-macos = ["gl", "vulkan", "metal", "textlayout", "svg", "webp"]
 gl = ["gpu", "skia-bindings/gl"]
@@ -39,7 +48,12 @@ vulkan = ["gpu", "skia-bindings/vulkan"]
 metal = ["gpu", "skia-bindings/metal"]
 d3d = ["gpu", "windows", "skia-bindings/d3d"]
 textlayout = ["skia-bindings/textlayout"]
-svg = ["skia-bindings/svg", "dep:base64", "dep:percent-encoding", "skia-svg-macros"]
+svg = [
+    "skia-bindings/svg",
+    "dep:base64",
+    "dep:percent-encoding",
+    "skia-svg-macros",
+]
 pdf = ["skia-bindings/pdf"]
 ureq = ["dep:ureq"]
 webp = ["webp-encode", "webp-decode"]
@@ -59,7 +73,7 @@ gpu = []
 
 [dependencies]
 bitflags = "2.0"
-skia-bindings = { version = "=0.91.0", path = "../skia-bindings", default-features = false }
+skia-bindings = { version = "=0.91.1", package = "fframes-skia-bindings", path = "../skia-bindings", default-features = false }
 
 
 # D3D types & ComPtr

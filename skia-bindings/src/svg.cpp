@@ -54,21 +54,25 @@ extern "C" bool C_ImageAsset_isMultiFrame(skresources::ImageAsset* self) {
 }
 
 extern "C" struct skresources::ImageAsset::FrameData C_ImageFrameData_Make(
-    const SkImage* image,
+    SkImage* image,
     SkMatrix matrix,
     SkSamplingOptions sampling,
     skresources::ImageAsset::SizeFit scaling)
 {
     skresources::ImageAsset::FrameData frameData;
-    
+
     if (image) {
-        frameData.image = sk_ref_sp(image);
+        frameData.image = sp(image);
         frameData.matrix = matrix;
         frameData.sampling = sampling;
         frameData.scaling = scaling;
     }
 
     return frameData;
+}
+
+extern "C" void C_ImageFrameData_Destruct(skresources::ImageAsset::FrameData* self) {
+    self->~FrameData();
 }
 
 extern "C" skresources::ImageAsset* C_MultiFrameImageAsset_Make(

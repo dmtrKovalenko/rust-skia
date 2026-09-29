@@ -2,9 +2,11 @@ use crate::Data;
 use crate::{prelude::*, Image, Matrix, SamplingOptions};
 use skia_bindings::{
     self as sb, skresources_ImageAsset, skresources_ImageAsset_FrameData,
-    skresources_ImageAsset_SizeFit, C_ImageFrameData_Make, C_RustImageAsset_New, RustImageAsset,
-    RustImageAsset_Param, SkRefCnt, SkRefCntBase, TraitObject,
+    skresources_ImageAsset_SizeFit, C_ImageFrameData_Destruct, C_ImageFrameData_Make,
+    C_RustImageAsset_New, RustImageAsset, RustImageAsset_Param, SkRefCnt, SkRefCntBase,
+    TraitObject,
 };
+use std::mem::ManuallyDrop;
 
 pub use sb::skresources_ImageDecodeStrategy as ImageDecodeStrategy;
 
@@ -45,25 +47,53 @@ impl ImageAsset {
 pub type ImageSizeFit = skresources_ImageAsset_SizeFit;
 pub type ImageFrameData = skresources_ImageAsset_FrameData;
 
-pub fn create_image_frame_data(
-    image: &Image,
-    matrix: Matrix,
-    sampling: SamplingOptions,
-    scaling: ImageSizeFit,
-) -> ImageFrameData {
-    unsafe {
-        C_ImageFrameData_Make(
-            image.native(),
-            matrix.into_native(),
-            sampling.into_native(),
-            scaling,
-        )
+/// A safe wrapper around [`ImageFrameData`] that properly releases the internal
+/// `sk_sp<SkImage>` reference when dropped. This ensures correct memory management
+/// when sharing images between Rust and the Skia SVG resource provider.
+///
+/// Created via [`ImageFrame::from_image`]. When returned from
+/// [`CustomImageAsset::get_frame_data`], the wrapper is consumed and ownership of the
+/// `sk_sp<SkImage>` reference transfers to C++.
+pub struct ImageFrame {
+    inner: ImageFrameData,
+}
+
+impl ImageFrame {
+    /// Creates a new `ImageFrame` from an [`Image`] reference.
+    ///
+    /// The image's reference count is incremented (via clone), so the caller retains
+    /// their own reference while the `ImageFrame` holds an independent one. This makes
+    /// it safe to share the same `Image` across multiple frames and with the resource
+    /// provider.
+    pub fn from_image(
+        image: &Image,
+        matrix: Matrix,
+        sampling: SamplingOptions,
+        scaling: ImageSizeFit,
+    ) -> Self {
+        let inner = unsafe {
+            C_ImageFrameData_Make(
+                image.clone().into_ptr(),
+                matrix.into_native(),
+                sampling.into_native(),
+                scaling,
+            )
+        };
+        Self { inner }
+    }
+}
+
+impl Drop for ImageFrame {
+    fn drop(&mut self) {
+        unsafe {
+            C_ImageFrameData_Destruct(&mut self.inner);
+        }
     }
 }
 
 pub trait CustomImageAsset {
     fn is_multi_frame(&self) -> bool;
-    fn get_frame_data(&self, t: f32) -> ImageFrameData;
+    fn get_frame_data(&self, t: f32) -> ImageFrame;
 }
 
 pub type NativeImageAsset = RCHandle<RustImageAsset>;
@@ -106,7 +136,8 @@ impl From<Box<dyn CustomImageAsset>> for NativeImageAsset {
         }
 
         extern "C" fn get_frame_data(asset: TraitObject, t: f32) -> ImageFrameData {
-            unsafe { asset_ref(&asset).get_frame_data(t) }
+            let frame = ManuallyDrop::new(unsafe { asset_ref(&asset).get_frame_data(t) });
+            unsafe { std::ptr::read(&frame.inner) }
         }
 
         unsafe fn asset_ref(asset: &TraitObject) -> &dyn CustomImageAsset {

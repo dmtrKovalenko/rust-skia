@@ -1,4 +1,4 @@
-pub use crate::modules::image_asset::{ImageAsset, ImageFrameData};
+pub use crate::modules::image_asset::{ImageAsset, ImageFrame, ImageFrameData};
 use crate::{prelude::*, Data, FontMgr, Typeface};
 use helpers::ResourceKind;
 pub use sb::skresources_ImageDecodeStrategy as ImageDecodeStrategy;

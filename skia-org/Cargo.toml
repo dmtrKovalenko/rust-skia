@@ -31,14 +31,22 @@ egl = ["gl", "skia-safe/egl"]
 x11 = ["gl", "skia-safe/x11"]
 wayland = ["egl", "skia-safe/wayland"]
 vulkan = ["dep:ash", "skia-safe/vulkan"]
-metal = ["dep:metal", "dep:foreign-types-shared", "dep:cocoa", "dep:objc", "dep:objc2", "dep:objc2-foundation", "skia-safe/metal"]
+metal = [
+    "dep:metal",
+    "dep:foreign-types-shared",
+    "dep:cocoa",
+    "dep:objc",
+    "dep:objc2",
+    "dep:objc2-foundation",
+    "skia-safe/metal",
+]
 d3d = ["skia-safe/d3d", "dep:windows"]
 textlayout = ["skia-safe/textlayout"]
 webp = ["skia-safe/webp"]
 svg = ["skia-safe/svg"]
 
 [dependencies]
-skia-safe = { path = "../skia-safe" }
+skia-safe = { package = "fframes-skia-safe", path = "../skia-safe" }
 
 # 0.25.1 fails to build on iOS targets on macOS: https://github.com/servo/rust-offscreen-rendering-context/pull/150 
 offscreen_gl_context = { git = "https://github.com/rust-skia/rust-offscreen-rendering-context", rev = "82b022cd0e42baaabfb82c319c9785a84a04f395", optional = true }
@@ -67,4 +75,3 @@ windows = { version = "0.62.0", features = [
 ], optional = true }
 # default typeface
 once_cell = { version = "1.19.0" }
-
